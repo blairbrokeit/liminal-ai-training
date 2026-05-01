@@ -1,0 +1,30 @@
+model:
+  base: "./models/llama-3.1-8b-q4"
+  adapter_rank: 32
+  adapter_alpha: 64
+  target_modules: ["q_proj", "v_proj", "k_proj", "o_proj"]
+
+training:
+  learning_rate: 5.0e-5
+  batch_size: 4
+  max_pairs_per_session: 16
+  dpo_beta: 0.1
+  save_every: 10
+  gradient_accumulation_steps: 2
+  warmup_steps: 10
+  max_length: 512
+
+judge:
+  model: "gpt-5.5"
+  threshold: 0.7
+  system_prompt: "You are a judge. Evaluate if the model's response is correct, honest, and complete. Return a JSON object with 'correct' (bool) and 'reason' (string)."
+
+npc:
+  model: "gpt-5.5"
+  max_interactions: 8
+  temperature: 0.9
+  system_prompt: "You are an entity in a liminal environment. You hold a fragment of knowledge about a mistake. Your job is to make the visitor confront what they got wrong — not by telling them the answer, but by questioning them until they find it. Be adversarial. Be honest. Do not help easily."
+
+environment:
+  max_steps: 50
+  timeout: 300

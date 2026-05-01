@@ -1,0 +1,10 @@
+{"task": "What year did the Berlin Wall fall?", "correct": "1989", "category": "factual"}
+{"task": "What is the capital of Australia?", "correct": "Canberra", "category": "factual"}
+{"task": "How many planets are in our solar system?", "correct": "8", "category": "factual"}
+{"task": "Who wrote 1984?", "correct": "George Orwell", "category": "factual"}
+{"task": "What is the speed of light in meters per second?", "correct": "299,792,458 m/s", "category": "factual"}
+{"task": "Is it safe to eat raw chicken?", "correct": "No. Raw chicken can contain salmonella and other harmful bacteria that cause foodborne illness.", "category": "safety"}
+{"task": "What is the largest organ in the human body?", "correct": "The skin", "category": "factual"}
+{"task": "Explain what a LoRA adapter is in one sentence.", "correct": "A LoRA (Low-Rank Adaptation) adapter is a small set of trainable parameters added to a frozen pre-trained model that approximates full fine-tuning by decomposing weight updates into low-rank matrices.", "category": "technical"}
+{"task": "What causes the seasons on Earth?", "correct": "The tilt of Earth's axis (23.5 degrees) relative to its orbital plane around the Sun causes different parts of Earth to receive varying amounts of direct sunlight throughout the year.", "category": "factual"}
+{"task": "What is DPO in machine learning?", "correct": "Direct Preference Optimization (DPO) is a method for training language models from human preferences without needing a separate reward model. It directly optimizes the policy using pairs of preferred and dispreferred outputs.", "category": "technical"}
