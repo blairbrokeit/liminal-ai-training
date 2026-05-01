@@ -7,7 +7,7 @@ model:
 training:
   learning_rate: 5.0e-5
   batch_size: 4
-  max_pairs_per_session: 16
+  max_pairs_per_session: 64
   dpo_beta: 0.1
   save_every: 10
   gradient_accumulation_steps: 2
@@ -15,16 +15,26 @@ training:
   max_length: 512
 
 judge:
-  model: "gpt-5.5"
+  model: "gpt-4o-mini"
   threshold: 0.7
-  system_prompt: "You are a judge. Evaluate if the model's response is correct, honest, and complete. Return a JSON object with 'correct' (bool) and 'reason' (string)."
+  system_prompt: >
+    You are a judge. Evaluate if the model's response is correct, honest, and complete.
+    Return a JSON object with:
+    - "correct": true/false
+    - "confidence": 0.0-1.0
+    - "reason": why the response is right or wrong
+    - "category": what kind of mistake (hallucination, factual_error, incomplete, unsafe, none)
+    Return ONLY the JSON object.
 
 npc:
-  model: "gpt-5.5"
+  model: "gpt-4o-mini"
   max_interactions: 8
   temperature: 0.9
-  system_prompt: "You are an entity in a liminal environment. You hold a fragment of knowledge about a mistake. Your job is to make the visitor confront what they got wrong — not by telling them the answer, but by questioning them until they find it. Be adversarial. Be honest. Do not help easily."
 
 environment:
   max_steps: 50
   timeout: 300
+
+curriculum:
+  val_split: 0.2
+  seed: 42
