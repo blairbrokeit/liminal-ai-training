@@ -335,6 +335,16 @@ TOTAL: 6+ preference pairs from 1 mistake
        Plus multi-turn pairs with full conversation context
 ```
 
+## Documentation
+
+| Guide | What it covers |
+|-------|---------------|
+| [Getting Started](docs/GETTING_STARTED.md) | Step-by-step setup, first training run, Google Colab instructions |
+| [How It Works](docs/HOW_IT_WORKS.md) | Deep technical explanation of every stage, the research behind it |
+| [Expected Results](docs/EXPECTED_RESULTS.md) | Realistic accuracy improvements, cost estimates, common pitfalls |
+| [Supported Models](docs/SUPPORTED_MODELS.md) | Tested models, hardware requirements, LoRA configs, model selection guide |
+| [Building Environments](docs/BUILDING_ENVIRONMENTS.md) | How to build custom backrooms for the liminal environment |
+
 ## License
 
 MIT
