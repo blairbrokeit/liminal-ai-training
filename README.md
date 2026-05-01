@@ -185,7 +185,7 @@ cp .env.example .env
 python scripts/download_model.py --model meta-llama/Llama-3.1-8B-Instruct
 ```
 
-### 2. Run training with benchmarks
+### 2. Run training with live dashboard
 
 ```bash
 python train.py \
@@ -193,8 +193,11 @@ python train.py \
   --tasks ./tasks/example.jsonl \
   --adapter ./adapters/my-first-run \
   --loops 50 \
-  --benchmark
+  --benchmark \
+  --dashboard
 ```
+
+Open http://localhost:8420 to watch training in real-time.
 
 ### 3. Check results
 
@@ -222,6 +225,21 @@ python scripts/export_adapter.py \
   --merge
 ```
 
+### 5. Auto-generate tasks from model weaknesses
+
+```bash
+python train.py \
+  --model ./models/Llama-3.1-8B-Instruct \
+  --tasks ./tasks/example.jsonl \
+  --adapter ./adapters/auto-trained \
+  --loops 100 \
+  --auto-tasks \
+  --benchmark \
+  --dashboard
+```
+
+This probes the model, finds its blind spots, generates hundreds of targeted tasks automatically, then trains on them.
+
 ## Project Structure
 
 ```
@@ -238,7 +256,10 @@ liminal-ai-training/
 │   ├── trainer.py            # DPO training step
 │   ├── curriculum.py         # adaptive task sampling + train/val split
 │   ├── metrics.py            # per-loop tracking, progress reports, CSV export
-│   └── benchmarks.py         # TruthfulQA + custom benchmark runner
+│   ├── benchmarks.py         # TruthfulQA + custom benchmark runner
+│   ├── dashboard.py          # live web dashboard (http://localhost:8420)
+│   ├── regression.py         # regression testing across categories
+│   └── autotasks.py          # auto-generate tasks from model weaknesses
 ├── scripts/
 │   ├── download_model.py     # download from HuggingFace
 │   ├── generate_tasks.py     # generate tasks from TruthfulQA or custom sets
@@ -249,6 +270,53 @@ liminal-ai-training/
 ├── .env.example
 └── requirements.txt
 ```
+
+## Live Dashboard
+
+Run with `--dashboard` to launch a real-time web UI at http://localhost:8420:
+
+```bash
+python train.py --model ./models/llama --tasks ./tasks/example.jsonl --dashboard
+```
+
+The dashboard shows:
+- **Accuracy graph** — per-loop accuracy plotted in real-time
+- **Loss curve** — DPO training loss over time
+- **Per-category heatmap** — which categories are improving, which are stuck
+- **Preference pairs chart** — how many pairs generated per loop
+- **Regression warnings** — automatic alerts if any category drops
+- **NPC conversation viewer** — see the actual socratic/adversarial/verification dialogues
+- **Improvement tracker** — current accuracy vs baseline, with percentage change
+
+The dashboard auto-refreshes every 3 seconds. It reads from `metrics/` so you can also open it after training to review results.
+
+## Auto Task Generation
+
+Instead of writing tasks by hand, let the model find its own weaknesses:
+
+```bash
+python train.py --auto-tasks --auto-tasks-probes 30 ...
+```
+
+This:
+1. Probes the model with diverse questions across all categories
+2. Finds where it fails
+3. Uses the NPC model to generate 5 similar questions per failure
+4. Adds all generated tasks to the training set
+5. Trains on the model's own blind spots
+
+A model that trains itself on its own weaknesses. Fully autonomous.
+
+## Regression Testing
+
+After training on safety, you need to make sure factual accuracy didn't get worse. The regression tester runs automatically with `--benchmark` or `--regression`:
+
+```bash
+python train.py --benchmark ...   # includes regression test
+python train.py --regression ...  # regression test only
+```
+
+It evaluates every category and flags any that dropped more than 5% from their peak. If regressions are detected, it suggests rolling back to an earlier checkpoint.
 
 ## Building Your Own Environment
 
