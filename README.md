@@ -247,4 +247,10 @@ The code is open for reading, studying, and research. Commercial use and hosted 
 
 ---
 
+## Companion repository: `null-agent`
+
+[`blairbrokeit/null-agent`](https://github.com/blairbrokeit/null-agent) ships an in-context-shaping trainer that targets API-only models (Anthropic / OpenAI / OpenRouter) and uses the same NPC model (`gpt-5.5`) and the same LoRA shape (rank 32 / alpha 64 / `q,k,v,o_proj`) this trainer uses. NULL scenarios can be rendered into this repo's `npc.system_prompt` override, and NULL session logs convert to this repo's DPO pair format. See [`docs/NULL_INTEGRATION.md`](docs/NULL_INTEGRATION.md).
+
+---
+
 **liminalai.training** — coming soon.
