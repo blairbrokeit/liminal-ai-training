@@ -9,7 +9,7 @@ Runs a local Flask server that shows real-time:
 - Current loop status, ETA, cost tracker
 - Regression warnings
 
-Launch with: python -m src.dashboard --metrics-dir ./metrics
+Launch with: python -m liminal.dashboard --metrics-dir ./metrics
 Or automatically via train.py --dashboard
 """
 

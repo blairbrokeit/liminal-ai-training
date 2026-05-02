@@ -85,7 +85,7 @@ These categories feed into the curriculum system — the model gets more practic
 
 ### What happens
 
-When the model makes a mistake, it enters a liminal environment — a text-based space it navigates by producing actions. The environment is an abstract interface (`src/environment.py`) that you implement.
+When the model makes a mistake, it enters a liminal environment — a text-based space it navigates by producing actions. The environment is an abstract interface (`liminal/environment.py`) that you implement.
 
 ### Why an environment?
 

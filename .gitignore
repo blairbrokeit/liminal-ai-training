@@ -29,3 +29,4 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+liminal_ai_training.egg-info/

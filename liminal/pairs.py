@@ -7,7 +7,7 @@ signal because they include the reasoning path.
 """
 
 from dataclasses import dataclass
-from src.npc import NPCSession
+from liminal.npc import NPCSession
 
 
 @dataclass

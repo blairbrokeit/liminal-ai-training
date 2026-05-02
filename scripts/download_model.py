@@ -29,7 +29,7 @@ def main():
 
     if args.quantize and args.quantize != "none":
         print(f"\nNote: For {args.quantize} quantization, the model will be quantized")
-        print("at load time via bitsandbytes (see src/model.py).")
+        print("at load time via bitsandbytes (see liminal/model.py).")
         print("No separate quantization step needed.")
 
 

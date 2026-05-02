@@ -6,32 +6,73 @@ When your model makes a mistake — hallucination, wrong answer, unsafe response
 
 The backrooms are the training loop.
 
-> **This is the source code behind the Liminal AI Training platform.**
-> The code is source-available for transparency. To train your models, use the platform at **liminalai.training** (coming soon).
+> **MIT-licensed. Self-hosted. Pip-installable. Pull requests welcome.**
+
+---
+
+## Install
+
+```bash
+pip install git+https://github.com/blairbrokeit/liminal-ai-training.git
+
+# or, for development:
+git clone https://github.com/blairbrokeit/liminal-ai-training.git
+cd liminal-ai-training
+pip install -e .
+
+# 4-bit quantized loading on CUDA (optional — pulls in bitsandbytes):
+pip install -e .[quantize]
+```
+
+Requires Python 3.10+ and PyTorch 2.1+.
+
+## Quickstart
+
+```bash
+# 1. set your judge/NPC API key
+export OPENAI_API_KEY=sk-...
+
+# 2. download a base model
+python scripts/download_model.py --model meta-llama/Llama-3.1-8B-Instruct
+
+# 3. train
+liminal-train --model ./models/llama-3.1-8b-instruct \
+              --tasks tasks/example.jsonl \
+              --loops 50 \
+              --benchmark \
+              --dashboard
+
+# 4. evaluate base vs adapter
+liminal-evaluate --model ./models/llama-3.1-8b-instruct \
+                 --adapter ./adapters/default \
+                 --tasks tasks/example.jsonl
+```
+
+`liminal-train` and `liminal-evaluate` are installed as console scripts. The compatibility shims `python train.py` and `python evaluate.py` at the repo root still work too.
+
+See [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for the full guide.
 
 ---
 
 ## How It Works
 
 ```
-     You describe your model's weaknesses
-                    │
-                    ▼
+     Model attempts a task
+              │
+              ▼
      ┌──────────────────────────────┐
-     │  Platform builds a tailored  │
-     │  liminal environment         │
-     │  based on those weaknesses   │
+     │  Judge evaluates response    │
+     │  (LLM-as-Judge, GPT-5.5)     │
+     └──────────┬───────────────────┘
+                │ if wrong
+                ▼
+     ┌──────────────────────────────┐
+     │  Model enters the backrooms  │
      └──────────┬───────────────────┘
                 │
                 ▼
      ┌──────────────────────────────┐
-     │  Your model enters the       │
-     │  backrooms                   │
-     └──────────┬───────────────────┘
-                │
-                ▼
-     ┌──────────────────────────────┐
-     │  GPT-5.5 NPCs question it:  │
+     │  GPT-5.5 NPCs question it:   │
      │                              │
      │  • Socratic — guided         │
      │    questioning until it      │
@@ -57,18 +98,9 @@ The backrooms are the training loop.
      ┌──────────────────────────────┐
      │  LoRA adapter updates        │
      │  Model genuinely improves    │
-     │  Download your adapter       │
+     │  Adapter saved to disk       │
      └──────────────────────────────┘
 ```
-
-## What You Get
-
-1. **Describe your model's problems** — "it hallucinates dates", "it gives unsafe medical advice", "it can't do basic math"
-2. **We build a tailored environment** — rooms, corridors, and NPCs designed around those specific weaknesses
-3. **Your model navigates and learns** — GPT-5.5 NPCs interrogate it from three angles on every mistake
-4. **Download your improved adapter** — a LoRA adapter you can load onto your base model anywhere
-
-No GPU required on your end. No setup. No configuration. Just tell us what's broken and we fix it.
 
 ---
 
@@ -120,7 +152,7 @@ Projected performance based on published research from the techniques powering t
 | Comprehension | 66% | 74% | **+8%** |
 | **Overall** | **65%** | **75%** | **+10%** |
 
-> These projections are based on published results from DPO ([Rafailov et al.](https://arxiv.org/abs/2305.18290)), LoRA ([Hu et al.](https://arxiv.org/abs/2106.09685)), curriculum learning ([Bengio et al.](https://dl.acm.org/doi/10.1145/1553374.1553380)), and adversarial training ([Bai et al.](https://arxiv.org/abs/2212.08073)). See [RESULTS.md](RESULTS.md) for the full breakdown.
+> Projections based on published results from DPO ([Rafailov et al.](https://arxiv.org/abs/2305.18290)), LoRA ([Hu et al.](https://arxiv.org/abs/2106.09685)), curriculum learning ([Bengio et al.](https://dl.acm.org/doi/10.1145/1553374.1553380)), and adversarial training ([Bai et al.](https://arxiv.org/abs/2212.08073)). See [RESULTS.md](RESULTS.md) for the full breakdown.
 
 ---
 
@@ -138,7 +170,7 @@ One mistake generates **6-16 preference pairs** instead of 1:
 └── Multi-turn context:    2-4 pairs (full conversation as prompt)
 ```
 
-Standard DPO generates 1 pair per mistake. We generate 8-16. More signal from every error = faster improvement.
+Standard DPO generates 1 pair per mistake. This pipeline generates 8-16. More signal from every error = faster improvement.
 
 ### Adaptive Curriculum
 
@@ -150,7 +182,7 @@ Training on safety shouldn't break factual accuracy. The regression tester runs 
 
 ### Live Dashboard
 
-Watch training in real-time:
+Watch training in real-time at `http://localhost:8420`:
 - Accuracy graph updating every loop
 - Per-category heatmap
 - Loss curves
@@ -194,35 +226,39 @@ The individual techniques are proven. This pipeline combines them into a single 
 
 ```
 liminal-ai-training/
-├── train.py                  # main training loop
-├── evaluate.py               # before/after comparison
-├── config.yaml               # training parameters
-├── src/
-│   ├── model.py              # model loading, LoRA, inference
-│   ├── judge.py              # mistake detection (LLM-as-Judge)
-│   ├── environment.py        # liminal environment engine
-│   ├── npc.py                # 3-strategy NPC runtime (GPT-5.5)
-│   ├── pairs.py              # preference pair generation
-│   ├── trainer.py            # DPO training on LoRA adapter
-│   ├── curriculum.py         # adaptive task weighting
-│   ├── metrics.py            # per-loop metrics and reporting
-│   ├── benchmarks.py         # TruthfulQA + custom benchmarks
-│   ├── dashboard.py          # live web dashboard
-│   ├── regression.py         # regression testing
-│   └── autotasks.py          # auto task generation from weaknesses
+├── train.py                       # compat shim → liminal.train:main
+├── evaluate.py                    # compat shim → liminal.evaluate:main
+├── config.yaml                    # training parameters
+├── pyproject.toml                 # package metadata
+├── liminal/
+│   ├── train.py                   # main training loop (CLI: liminal-train)
+│   ├── evaluate.py                # before/after comparison (CLI: liminal-evaluate)
+│   ├── model.py                   # model loading, LoRA, inference
+│   ├── judge.py                   # mistake detection (LLM-as-Judge)
+│   ├── environment.py             # liminal environment engine
+│   ├── npc.py                     # 3-strategy NPC runtime (GPT-5.5)
+│   ├── pairs.py                   # preference pair generation
+│   ├── trainer.py                 # DPO training on LoRA adapter
+│   ├── curriculum.py              # adaptive task weighting
+│   ├── metrics.py                 # per-loop metrics and reporting
+│   ├── benchmarks.py              # TruthfulQA + custom benchmarks
+│   ├── dashboard.py               # live web dashboard
+│   ├── regression.py              # regression testing
+│   └── autotasks.py               # auto task generation from weaknesses
 ├── scripts/
-│   ├── download_model.py     # model download
-│   ├── generate_tasks.py     # task set generation
-│   └── export_adapter.py     # adapter export and merging
+│   ├── download_model.py          # model download
+│   ├── generate_tasks.py          # task set generation
+│   └── export_adapter.py          # adapter export and merging
 ├── docs/
-│   ├── HOW_IT_WORKS.md       # full technical explanation
-│   ├── EXPECTED_RESULTS.md   # detailed projections and caveats
-│   ├── SUPPORTED_MODELS.md   # model compatibility and configs
-│   ├── GETTING_STARTED.md    # setup guide
-│   └── BUILDING_ENVIRONMENTS.md  # custom environment design
+│   ├── HOW_IT_WORKS.md            # full technical explanation
+│   ├── EXPECTED_RESULTS.md        # detailed projections and caveats
+│   ├── SUPPORTED_MODELS.md        # model compatibility and configs
+│   ├── GETTING_STARTED.md         # setup guide
+│   ├── BUILDING_ENVIRONMENTS.md   # custom environment design
+│   └── NULL_INTEGRATION.md        # interop with blairbrokeit/null-agent
 ├── tasks/
-│   └── example.jsonl         # 32 example tasks across 6 categories
-└── RESULTS.md                # projected benchmarks for 4 models
+│   └── example.jsonl              # 32 example tasks across 6 categories
+└── RESULTS.md                     # projected benchmarks for 4 models
 ```
 
 ---
@@ -231,19 +267,13 @@ liminal-ai-training/
 
 | Guide | What it covers |
 |-------|---------------|
-| [Results & Evidence](RESULTS.md) | Projected benchmarks for 4 models, research citations, training curves |
+| [Getting Started](docs/GETTING_STARTED.md) | Install, configure, first run |
 | [How It Works](docs/HOW_IT_WORKS.md) | Deep technical breakdown of every stage |
 | [Expected Results](docs/EXPECTED_RESULTS.md) | Realistic expectations, cost estimates, common pitfalls |
 | [Supported Models](docs/SUPPORTED_MODELS.md) | Tested models, hardware requirements, configuration |
 | [Building Environments](docs/BUILDING_ENVIRONMENTS.md) | Custom liminal environment design |
-
----
-
-## License
-
-Source-available. See [LICENSE](LICENSE).
-
-The code is open for reading, studying, and research. Commercial use and hosted services require a license. The hosted platform handles all training infrastructure — no setup required on your end.
+| [NULL Integration](docs/NULL_INTEGRATION.md) | Plug `null-agent` scenarios in as NPC authors |
+| [Results](RESULTS.md) | Projected benchmarks for 4 models, research citations |
 
 ---
 
@@ -253,4 +283,6 @@ The code is open for reading, studying, and research. Commercial use and hosted 
 
 ---
 
-**liminalai.training** — coming soon.
+## License
+
+[MIT](LICENSE). Use it, fork it, ship it, sell what you build with it.

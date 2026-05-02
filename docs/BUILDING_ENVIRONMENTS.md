@@ -7,7 +7,7 @@ The liminal environment is where the model goes when it makes a mistake. This gu
 Your environment needs three methods:
 
 ```python
-from src.environment import LiminalEnvironment, NPC
+from liminal.environment import LiminalEnvironment, NPC
 
 class MyEnvironment(LiminalEnvironment):
     def reset(self, context: dict) -> str:

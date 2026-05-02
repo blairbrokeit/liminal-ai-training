@@ -265,4 +265,4 @@ huggingface-cli login
 - Read [How It Works](HOW_IT_WORKS.md) for the full technical explanation
 - Read [Expected Results](EXPECTED_RESULTS.md) to calibrate your expectations
 - Read [Supported Models](SUPPORTED_MODELS.md) to choose the right model
-- Build a custom environment in `src/environment.py` for your own backrooms design
+- Build a custom environment in `liminal/environment.py` for your own backrooms design

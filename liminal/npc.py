@@ -14,7 +14,7 @@ NPCs use three strategies:
 import random
 from dataclasses import dataclass, field
 from openai import OpenAI
-from src.environment import NPC
+from liminal.environment import NPC
 
 
 @dataclass

@@ -1,0 +1,67 @@
+[project]
+name = "liminal-ai-training"
+version = "0.1.0"
+description = "Train AI models by sending them to the backrooms — DPO LoRA updates driven by NPC dialogues in liminal environments."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "blairbrokeit" },
+]
+keywords = ["dpo", "lora", "peft", "rlhf", "fine-tuning", "alignment"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "torch>=2.1.0",
+    "transformers>=4.40.0",
+    "peft>=0.10.0",
+    "trl>=0.8.0",
+    "accelerate>=0.27.0",
+    "huggingface-hub>=0.23.0",
+    "safetensors>=0.4.0",
+    "openai>=1.30.0",
+    "datasets>=2.19.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "python-json-logger>=2.0.0",
+    "flask>=3.0.0",
+]
+
+[project.optional-dependencies]
+# 4-bit quantized loading for consumer GPUs. Optional because
+# bitsandbytes wheels are platform-specific and pulling them in by
+# default breaks installs on macOS / non-CUDA Linux.
+quantize = [
+    "bitsandbytes>=0.43.0",
+]
+# Test deps. Install with `pip install -e .[test]`.
+test = [
+    "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/blairbrokeit/liminal-ai-training"
+Repository = "https://github.com/blairbrokeit/liminal-ai-training"
+Issues = "https://github.com/blairbrokeit/liminal-ai-training/issues"
+"Companion: null-agent" = "https://github.com/blairbrokeit/null-agent"
+
+[project.scripts]
+liminal-train = "liminal.train:main"
+liminal-evaluate = "liminal.evaluate:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["liminal*"]
+exclude = ["tests*", "scripts*", "docs*", "tasks*", "models*", "adapters*", "metrics*"]

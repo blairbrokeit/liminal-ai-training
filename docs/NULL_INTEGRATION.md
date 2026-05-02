@@ -13,7 +13,7 @@ about. The full bridge surface is documented from the other side at
 
 ## 1. NPC system_prompt override from a NULL scenario
 
-`src/npc.py` builds NPC sessions from one of three built-in
+`liminal/npc.py` builds NPC sessions from one of three built-in
 strategies: socratic, adversarial, verification. The `NPCRuntime`
 constructor also accepts a `system_prompt` override that, when set,
 replaces all three. This is the hook NULL writes into.
@@ -58,7 +58,7 @@ null bridge dpo-pairs path/to/sessions.jsonl --out /tmp/null-dpo.jsonl
 ```
 
 The output is one JSON object per line in the format
-`src/pairs.py::pairs_to_dataset` already produces:
+`liminal/pairs.py::pairs_to_dataset` already produces:
 
 ```json
 {"prompt": "...", "chosen": "...", "rejected": "...", "category": "null_scenario_001_embodied_pain", "source": "null_replay"}
@@ -79,7 +79,7 @@ emits a pair the model already trained on.
 
 ## 3. NULL as a `LiminalEnvironment`
 
-`src/environment.py` ships `BasicLiminalEnvironment` as a placeholder
+`liminal/environment.py` ships `BasicLiminalEnvironment` as a placeholder
 implementation. NULL provides a real one:
 
 ```python
