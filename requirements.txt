@@ -1,28 +1,32 @@
-# Core
+# This file is kept for users who prefer `pip install -r requirements.txt`.
+# The authoritative dependency list is in pyproject.toml.
+#
+# Recommended install:
+#     pip install -e .
+#
+# For 4-bit quantized loading on CUDA:
+#     pip install -e .[quantize]
+
 torch>=2.1.0
 transformers>=4.40.0
 peft>=0.10.0
 trl>=0.8.0
 accelerate>=0.27.0
-bitsandbytes>=0.43.0
 
-# Model loading
 huggingface-hub>=0.23.0
 safetensors>=0.4.0
 
-# NPC / Judge (external model calls)
 openai>=1.30.0
 
-# Data
 datasets>=2.19.0
 
-# Config
 pyyaml>=6.0
 python-dotenv>=1.0.0
 
-# Logging
 rich>=13.0.0
 python-json-logger>=2.0.0
 
-# Dashboard
 flask>=3.0.0
+
+# optional, install separately on CUDA hosts:
+# bitsandbytes>=0.43.0

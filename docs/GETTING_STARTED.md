@@ -2,12 +2,14 @@
 
 A step-by-step guide to running your first training loop. From zero to a measurably improved model.
 
+For the absolute shortest install path, see [`INSTALL.md`](../INSTALL.md). This guide is the longer version with explanations, troubleshooting, and the full first-run walkthrough.
+
 ## Prerequisites
 
 Before you start, you need:
 
-1. **Python 3.11+**
-2. **A GPU with at least 6GB VRAM** (for training). No GPU? See [Running on Google Colab](#running-on-google-colab) below.
+1. **Python 3.10+**
+2. **A GPU with at least 6 GB VRAM** (for training). No GPU? See [Running on Google Colab](#running-on-google-colab) below.
 3. **An API key** for the judge/NPC model. Get one from [OpenAI](https://platform.openai.com/api-keys) or any OpenAI-compatible provider.
 
 ## Step 1: Install
@@ -15,13 +17,25 @@ Before you start, you need:
 ```bash
 git clone https://github.com/blairbrokeit/liminal-ai-training.git
 cd liminal-ai-training
-pip install -r requirements.txt
+pip install -e .
 ```
 
-If you have CUDA issues, install PyTorch separately first:
+That installs the package and the two console scripts you'll use:
+
+- `liminal-train` — the training loop
+- `liminal-evaluate` — base-vs-adapter comparison
+
+For 4-bit quantized loading (saves a lot of VRAM, CUDA only):
+
+```bash
+pip install -e .[quantize]
+```
+
+If CUDA is being difficult, install the matching PyTorch wheel first:
+
 ```bash
 pip install torch --index-url https://download.pytorch.org/whl/cu121
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Step 2: Configure
@@ -55,13 +69,15 @@ python scripts/download_model.py --model microsoft/Phi-3-mini-4k-instruct
 Run 10 loops on the example tasks to verify everything works:
 
 ```bash
-python train.py \
+liminal-train \
   --model ./models/Llama-3.1-8B-Instruct \
   --tasks ./tasks/example.jsonl \
   --adapter ./adapters/first-test \
   --loops 10 \
   --benchmark
 ```
+
+(`python train.py ...` still works too — it's a thin shim around `liminal-train`.)
 
 You should see:
 1. Model loading
@@ -75,7 +91,7 @@ You should see:
 ## Step 5: Check Your Results
 
 ```bash
-python evaluate.py \
+liminal-evaluate \
   --model ./models/Llama-3.1-8B-Instruct \
   --adapter ./adapters/first-test \
   --tasks ./tasks/example.jsonl
@@ -92,7 +108,7 @@ Once you've verified the pipeline works, run a proper training session:
 python scripts/generate_tasks.py --source truthfulqa --limit 200 --output ./tasks/truthfulqa.jsonl
 
 # Run 100 loops with benchmarks
-python train.py \
+liminal-train \
   --model ./models/Llama-3.1-8B-Instruct \
   --tasks ./tasks/truthfulqa.jsonl \
   --adapter ./adapters/truthful-v1 \
@@ -174,7 +190,7 @@ python scripts/generate_tasks.py --source custom --file ./my_questions.txt
 If training is interrupted or you want to continue from a checkpoint:
 
 ```bash
-python train.py \
+liminal-train \
   --model ./models/Llama-3.1-8B-Instruct \
   --tasks ./tasks/truthfulqa.jsonl \
   --adapter ./adapters/truthful-v1 \    # points to existing adapter
@@ -196,7 +212,7 @@ No GPU? Use Google Colab's free T4 (16GB VRAM).
 ```python
 !git clone https://github.com/blairbrokeit/liminal-ai-training.git
 %cd liminal-ai-training
-!pip install -r requirements.txt
+!pip install -e .[quantize]
 
 # Set API key
 import os
@@ -206,7 +222,7 @@ os.environ["OPENAI_API_KEY"] = "sk-your-key-here"
 !python scripts/download_model.py --model meta-llama/Llama-3.1-8B-Instruct
 
 # Train
-!python train.py \
+!liminal-train \
   --model ./models/Llama-3.1-8B-Instruct \
   --tasks ./tasks/example.jsonl \
   --adapter ./adapters/colab-test \

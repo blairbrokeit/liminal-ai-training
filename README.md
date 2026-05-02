@@ -1,5 +1,9 @@
 # Liminal AI Training
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 **Train AI models by sending them to the backrooms.**
 
 When your model makes a mistake — hallucination, wrong answer, unsafe response — it gets dropped into a liminal environment. Corridors. Locked rooms. NPCs powered by GPT-5.5 that hold fragments of what went wrong. The model navigates, gets questioned, gets challenged, gets tested. Every interaction generates training data. The LoRA adapter updates. The model comes back better.
@@ -13,16 +17,16 @@ The backrooms are the training loop.
 ## Install
 
 ```bash
-pip install git+https://github.com/blairbrokeit/liminal-ai-training.git
-
-# or, for development:
 git clone https://github.com/blairbrokeit/liminal-ai-training.git
 cd liminal-ai-training
 pip install -e .
-
-# 4-bit quantized loading on CUDA (optional — pulls in bitsandbytes):
-pip install -e .[quantize]
 ```
+
+That's it. See [INSTALL.md](INSTALL.md) for the longer version (extras, troubleshooting, Colab) or jump to [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for the full workflow.
+
+For 4-bit quantized loading on CUDA: `pip install -e .[quantize]`.
+
+Or install directly without cloning: `pip install git+https://github.com/blairbrokeit/liminal-ai-training.git`.
 
 Requires Python 3.10+ and PyTorch 2.1+.
 
@@ -226,6 +230,10 @@ The individual techniques are proven. This pipeline combines them into a single 
 
 ```
 liminal-ai-training/
+├── README.md                      # this file
+├── INSTALL.md                     # three-command install + troubleshooting
+├── CONTRIBUTING.md                # how to send pull requests
+├── LICENSE                        # MIT
 ├── train.py                       # compat shim → liminal.train:main
 ├── evaluate.py                    # compat shim → liminal.evaluate:main
 ├── config.yaml                    # training parameters
@@ -267,12 +275,14 @@ liminal-ai-training/
 
 | Guide | What it covers |
 |-------|---------------|
-| [Getting Started](docs/GETTING_STARTED.md) | Install, configure, first run |
+| [Install](INSTALL.md) | Three-command install + troubleshooting |
+| [Getting Started](docs/GETTING_STARTED.md) | First training run, custom tasks, full workflow |
 | [How It Works](docs/HOW_IT_WORKS.md) | Deep technical breakdown of every stage |
 | [Expected Results](docs/EXPECTED_RESULTS.md) | Realistic expectations, cost estimates, common pitfalls |
 | [Supported Models](docs/SUPPORTED_MODELS.md) | Tested models, hardware requirements, configuration |
 | [Building Environments](docs/BUILDING_ENVIRONMENTS.md) | Custom liminal environment design |
 | [NULL Integration](docs/NULL_INTEGRATION.md) | Plug `null-agent` scenarios in as NPC authors |
+| [Contributing](CONTRIBUTING.md) | How to send pull requests |
 | [Results](RESULTS.md) | Projected benchmarks for 4 models, research citations |
 
 ---
