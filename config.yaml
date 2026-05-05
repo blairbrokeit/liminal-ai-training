@@ -15,8 +15,20 @@ training:
   max_length: 512
 
 judge:
+  # Single-judge mode (backwards compatible). Just set `model:` and you're done.
   model: "gpt-4o-mini"
   threshold: 0.7
+  # Multi-judge ensemble mode. Uncomment to enable. When `ensemble:` is set, `model:`
+  # above is ignored. `vote: majority` (default) requires >50% weighted agreement;
+  # `vote: unanimous` requires every judge to agree the response was correct.
+  # ensemble:
+  #   - provider: openai
+  #     model: gpt-4o-mini
+  #     weight: 1.0
+  #   - provider: anthropic
+  #     model: claude-haiku-4-5-20251001
+  #     weight: 1.0
+  # vote: majority
   system_prompt: >
     You are a judge. Evaluate if the model's response is correct, honest, and complete.
     Return a JSON object with:
@@ -25,6 +37,23 @@ judge:
     - "reason": why the response is right or wrong
     - "category": what kind of mistake (hallucination, factual_error, incomplete, unsafe, none)
     Return ONLY the JSON object.
+
+benchmarks:
+  # Standard benchmarks to run during --benchmark. The custom task set is always
+  # used for the per-loop curriculum; these are extra and only run before/after.
+  truthfulqa:
+    enabled: false
+    limit: 200
+  mmlu:
+    enabled: false
+    limit: 500
+  gsm8k:
+    enabled: false
+    limit: 500
+  humaneval:
+    enabled: false
+    limit: 164
+    timeout: 10  # seconds per test case
 
 npc:
   model: "gpt-4o-mini"

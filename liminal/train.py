@@ -23,7 +23,7 @@ from pathlib import Path
 from rich.console import Console
 
 from liminal.model import load_model, create_adapter, generate
-from liminal.judge import Judge
+from liminal.judge import Judge, build_judge_from_config
 from liminal.environment import BasicLiminalEnvironment
 from liminal.npc import NPCRuntime
 from liminal.pairs import extract_pairs, pairs_to_dataset, deduplicate_pairs
@@ -45,6 +45,43 @@ def load_tasks(path: str) -> list[dict]:
             if line:
                 tasks.append(json.loads(line))
     return tasks
+
+
+def _run_standard_benchmarks(benchmarks, model, tokenizer, judge, bench_config: dict, label: str) -> dict:
+    """Run any standard benchmark whose config block is enabled. Returns {name: BenchmarkResult}."""
+    results = {}
+
+    tqa = bench_config.get("truthfulqa", {})
+    if tqa.get("enabled"):
+        console.rule(f"[bold]TruthfulQA ({label})[/bold]")
+        r = benchmarks.run_truthfulqa(model, tokenizer, judge, generate, limit=tqa.get("limit", 200))
+        benchmarks.save_result(r, label=label)
+        results["truthfulqa"] = r
+
+    mmlu = bench_config.get("mmlu", {})
+    if mmlu.get("enabled"):
+        console.rule(f"[bold]MMLU ({label})[/bold]")
+        r = benchmarks.run_mmlu(model, tokenizer, generate, limit=mmlu.get("limit", 500))
+        benchmarks.save_result(r, label=label)
+        results["mmlu"] = r
+
+    gsm = bench_config.get("gsm8k", {})
+    if gsm.get("enabled"):
+        console.rule(f"[bold]GSM8K ({label})[/bold]")
+        r = benchmarks.run_gsm8k(model, tokenizer, generate, limit=gsm.get("limit", 500))
+        benchmarks.save_result(r, label=label)
+        results["gsm8k"] = r
+
+    he = bench_config.get("humaneval", {})
+    if he.get("enabled"):
+        console.rule(f"[bold]HumanEval ({label})[/bold]")
+        r = benchmarks.run_humaneval(
+            model, tokenizer, generate, limit=he.get("limit", 164), timeout=he.get("timeout", 10),
+        )
+        benchmarks.save_result(r, label=label)
+        results["humaneval"] = r
+
+    return results
 
 
 def run(args):
@@ -73,11 +110,12 @@ def run(args):
         model = create_adapter(model, config["model"])
 
     # Components
-    judge = Judge(
-        model=config["judge"]["model"],
-        threshold=config["judge"]["threshold"],
-        system_prompt=config["judge"].get("system_prompt"),
-    )
+    judge = build_judge_from_config(config["judge"])
+    if len(judge.members) > 1:
+        members = ", ".join(f"{m.provider}:{m.model}" for m in judge.members)
+        console.print(f"Judge: ensemble [{members}] vote={judge.vote_strategy}")
+    else:
+        console.print(f"Judge: {judge.model}")
 
     npc_runtime = NPCRuntime(
         model=config["npc"]["model"],
@@ -123,6 +161,7 @@ def run(args):
     # Baseline benchmark (before training)
     baseline = None
     baseline_per_category = {}
+    standard_baselines = {}
     if args.benchmark:
         console.rule("[bold]Baseline Benchmark[/bold]")
         baseline = benchmarks.run_custom(
@@ -136,6 +175,11 @@ def run(args):
         for cat, data in baseline.per_category.items():
             if data["total"] > 0:
                 baseline_per_category[cat] = data["correct"] / data["total"]
+
+        # Optional standard benchmarks (MMLU/GSM8K/HumanEval/TruthfulQA)
+        standard_baselines = _run_standard_benchmarks(
+            benchmarks, model, tokenizer, judge, config.get("benchmarks", {}), label="before",
+        )
         console.print()
 
     # ==================== TRAINING LOOP ====================
@@ -299,6 +343,15 @@ def run(args):
         )
         benchmarks.save_result(final, label="after")
         benchmarks.compare(baseline, final)
+
+        # Re-run standard benchmarks for before/after comparison
+        standard_finals = _run_standard_benchmarks(
+            benchmarks, model, tokenizer, judge, config.get("benchmarks", {}), label="after",
+        )
+        for name, before_result in standard_baselines.items():
+            after_result = standard_finals.get(name)
+            if after_result:
+                benchmarks.compare(before_result, after_result)
 
     # Full progress report
     console.rule("[bold]Training Complete[/bold]")

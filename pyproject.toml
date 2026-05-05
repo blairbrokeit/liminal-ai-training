@@ -43,6 +43,11 @@ dependencies = [
 quantize = [
     "bitsandbytes>=0.43.0",
 ]
+# Anthropic SDK — only needed if you add Claude to the judge ensemble.
+# Install with: pip install -e .[ensemble]
+ensemble = [
+    "anthropic>=0.40.0",
+]
 # Test deps. Install with `pip install -e .[test]`.
 test = [
     "pytest>=8.0",

@@ -54,6 +54,17 @@ liminal-evaluate --model ./models/llama-3.1-8b-instruct \
 
 `liminal-train` and `liminal-evaluate` are installed as console scripts. The compatibility shims `python train.py` and `python evaluate.py` at the repo root still work too.
 
+### One-command smoke test
+
+If you just want to see the pipeline produce real before/after numbers:
+
+```bash
+export OPENAI_API_KEY=sk-...
+python scripts/smoke_run.py
+```
+
+Downloads Phi-3 Mini (~7 GB), runs 2 training loops, and benchmarks MMLU + GSM8K before and after. Designed to finish in well under an hour on a consumer GPU. Uses [`configs/smoke-phi3.yaml`](configs/smoke-phi3.yaml).
+
 See [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for the full guide.
 
 ---
@@ -161,6 +172,29 @@ Projected performance based on published research from the techniques powering t
 ---
 
 ## The Technology
+
+### Multi-Provider Judge Ensemble
+
+By default the judge is a single OpenAI model. For higher-credibility scoring you can configure an ensemble — e.g. GPT-4o-mini + Claude Haiku 4.5 — and require majority or unanimous agreement before a response is marked wrong. This reduces single-judge bias (the most common critique of LLM-as-judge benchmarks) and makes any reported improvement harder to dismiss as "trained-on-judge-preferences".
+
+```yaml
+judge:
+  threshold: 0.7
+  ensemble:
+    - provider: openai
+      model: gpt-4o-mini
+    - provider: anthropic
+      model: claude-haiku-4-5-20251001
+  vote: majority   # or "unanimous" for stricter scoring
+```
+
+Install with `pip install -e .[ensemble]` to pull in the Anthropic SDK.
+
+### Standard Benchmarks (Exact-Match)
+
+Beyond TruthfulQA (judge-scored), the benchmark runner now supports **MMLU**, **GSM8K**, and **HumanEval** — three of the most-cited open benchmarks. All three are exact-match (multiple choice / final number / unit-test pass) so they don't depend on judge bias at all. Enable them in `config.yaml` or pass `--mmlu --gsm8k --humaneval` to `liminal-evaluate`.
+
+> **HumanEval** runs model-generated Python in a subprocess with a timeout. Only run it on models you trust, or wrap it in a real sandbox.
 
 ### Why 3 NPC Strategies?
 

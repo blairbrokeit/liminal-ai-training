@@ -4,6 +4,8 @@ Projected performance based on the published research behind each technique in t
 
 Nobody has combined them in this exact configuration before. These projections represent what the research tells us should happen when you wire them together.
 
+> ⚠️ **These are projections, not measurements.** No real training run results have been recorded yet. To produce real numbers, run `python scripts/smoke_run.py` (Phi-3 Mini, ~1 hour on a consumer GPU, MMLU + GSM8K before/after). The pipeline now supports MMLU, GSM8K, HumanEval, and TruthfulQA — three of those are exact-match scoring so the numbers don't depend on judge bias. Real results will replace this section once collected.
+
 ---
 
 ## Projected Performance: 4 Models

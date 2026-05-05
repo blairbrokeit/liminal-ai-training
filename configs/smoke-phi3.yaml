@@ -1,0 +1,64 @@
+# Smoke test config — Phi-3 Mini, 2 loops, single judge, MMLU + GSM8K only.
+#
+# Goal: produce a real before/after benchmark in under an hour on a consumer GPU.
+# Once you've seen the pipeline run end-to-end with this, copy config.yaml back
+# in for a real training run.
+#
+# Usage:
+#   python scripts/download_model.py --model microsoft/Phi-3-mini-4k-instruct
+#   liminal-train --model ./models/phi-3-mini-4k-instruct \
+#                 --tasks tasks/example.jsonl \
+#                 --config configs/smoke-phi3.yaml \
+#                 --loops 2 \
+#                 --benchmark \
+#                 --batch-size 8
+
+model:
+  base: "./models/phi-3-mini-4k-instruct"
+  adapter_rank: 16            # smaller adapter — faster, fits on smaller GPUs
+  adapter_alpha: 32
+  target_modules: ["q_proj", "v_proj"]   # fewer modules → less VRAM
+
+training:
+  learning_rate: 5.0e-5
+  batch_size: 2
+  max_pairs_per_session: 32
+  dpo_beta: 0.1
+  save_every: 1               # save after each loop so a crash isn't fatal
+  gradient_accumulation_steps: 4
+  warmup_steps: 5
+  max_length: 512
+
+judge:
+  # Single judge for the smoke run — cheap and fast.
+  # When you trust the pipeline, switch to the ensemble in config.yaml.
+  model: "gpt-4o-mini"
+  threshold: 0.7
+
+npc:
+  model: "gpt-4o-mini"
+  max_interactions: 4         # half the default — fewer NPC turns per mistake
+  temperature: 0.9
+
+environment:
+  max_steps: 25
+  timeout: 180
+
+curriculum:
+  val_split: 0.2
+  seed: 42
+
+benchmarks:
+  # MMLU and GSM8K only — both are exact-match (no judge bias) and the smallest
+  # standard benchmarks that still mean something. Limits are deliberately
+  # small so a smoke run finishes quickly. Bump them for a real run.
+  truthfulqa:
+    enabled: false
+  mmlu:
+    enabled: true
+    limit: 100
+  gsm8k:
+    enabled: true
+    limit: 100
+  humaneval:
+    enabled: false             # skip — adds runtime and needs Python in PATH
